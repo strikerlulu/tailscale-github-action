@@ -7,6 +7,10 @@ branding:
   icon: 'arrow-right-circle'
   color: 'gray-dark'
 inputs:
+  login-server:
+    description: 'Your Tailscale login server.'
+    required: false
+    default: 'https://controlplane.tailscale.com'
   authkey:
     description: 'Your Tailscale authentication key, from the admin panel.'
     required: false
@@ -108,6 +112,7 @@ runs:
           ADDITIONAL_ARGS: ${{ inputs.args }}
           HOSTNAME: ${{ inputs.hostname }}
           TS_EXPERIMENT_OAUTH_AUTHKEY: true
+          TS_LOGIN_SERVER: ${{ inputs.login-server }}
         run: |
           if [ -z "${HOSTNAME}" ]; then
             HOSTNAME="github-$(cat /etc/hostname)"
@@ -116,4 +121,4 @@ runs:
             TAILSCALE_AUTHKEY="${{ inputs['oauth-secret'] }}?preauthorized=true&ephemeral=true"
             TAGS_ARG="--advertise-tags=${{ inputs.tags }}"
           fi
-          timeout 5m sudo -E tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY} --hostname=${HOSTNAME} --accept-routes ${ADDITIONAL_ARGS}
+          timeout 5m sudo -E tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY} --hostname=${HOSTNAME} --accept-routes ${ADDITIONAL_ARGS} --login-server ${TS_LOGIN_SERVER}
